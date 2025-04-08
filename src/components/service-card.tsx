@@ -1,55 +1,29 @@
-'use client'
-import Image from 'next/image'
-import React, { useEffect, useState } from 'react'
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
 
-const RotatedImage = () => {
+interface ServiceCardProps {
+    title: string
+    subtitle?: string
+    image: string
+    imagePosition: "left" | "right"
+    onBookNow?: () => void
+}
 
-    const [windowWidth, setWindowWidth] = useState(0)
-
-    useEffect(() => {
-        // Set initial window width
-        setWindowWidth(typeof window !== 'undefined' ? window.innerWidth : 0)
-
-        // Update window width when resized
-        const handleResize = () => {
-            setWindowWidth(window.innerWidth)
-        }
-
-        if (typeof window !== 'undefined') {
-            window.addEventListener('resize', handleResize)
-            return () => window.removeEventListener('resize', handleResize)
-        }
-    }, [])
-
+export function ServiceCard({ title, subtitle, image, imagePosition, onBookNow }: ServiceCardProps) {
     return (
-        <div className="col-span-1 sm:col-span-1 md:col-span-2 flex flex-col items-center order-1 sm:order-2">
-            <div className="flex items-center justify-center">
-                <Image
-                    src="/assets/img2.svg"
-                    alt="Salon service"
-                    width={windowWidth < 640 ? 120 : windowWidth < 768 ? 150 : 200}
-                    height={windowWidth < 640 ? 120 : windowWidth < 768 ? 150 : 200}
-                    className="object-contain"
-                />
-            </div>
-            <div className="flex items-center justify-center gap-x-2 sm:gap-x-4 -mt-2 sm:-mt-4 md:-mt-8">
-                <Image
-                    src="/assets/img1.svg"
-                    alt="Salon service"
-                    width={windowWidth < 640 ? 120 : windowWidth < 768 ? 150 : 200}
-                    height={windowWidth < 640 ? 120 : windowWidth < 768 ? 150 : 200}
-                    className="object-contain"
-                />
-                <Image
-                    src="/assets/img3.svg"
-                    alt="Salon service"
-                    width={windowWidth < 640 ? 120 : windowWidth < 768 ? 150 : 200}
-                    height={windowWidth < 640 ? 120 : windowWidth < 768 ? 150 : 200}
-                    className="object-contain"
-                />
+        <div className="border-2 border-gray-950 rounded-lg p-4 flex items-center">
+            <div className={`flex w-full ${imagePosition === 'left' ? 'flex-row' : 'flex-row-reverse'} justify-between items-center`}>
+                <div className="w-[300px]">
+                    <Image src={image} alt={title} width={400} height={400} />
+                </div>
+                <div className="flex w-full flex-col gap-y-2 items-center justify-center text-center">
+                    <h2 className="font-bold text-2xl">{title}</h2>
+                    <p>{subtitle}</p>
+                    <Button className="flex shadow-lg rounded-full mt-10 w-fit border-2 border-[#E5ABAB]" variant="outline" onClick={onBookNow}>
+                        Book Now
+                    </Button>
+                </div>
             </div>
         </div>
     )
 }
-
-export default RotatedImage

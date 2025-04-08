@@ -1,190 +1,180 @@
-'use client'
+"use client"
+import { useState } from "react"
+import type { NextPage } from "next"
+import Image from "next/image"
+import { Carousel } from "@/components/carousel"
+import { ServiceCard } from "@/components/service-card"
+import { BookingModal } from "@/components/booking-modal"
+import { servicesData } from "../../../services-data"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
+import { ChevronRight } from "lucide-react"
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { products } from '../../../data';
-import type { Product } from '../../../types';
-import { Check, Search } from 'lucide-react';
-import Image from 'next/image';
+type Gender = "men" | "women"
+type ServiceCategory = string
 
-export default function ProductsPage() {
-    const [searchInput, setSearchInput] = useState('');
-    const [searchQuery, setSearchQuery] = useState('');
-    const [sortOrder, setSortOrder] = useState<'asc' | 'desc' | null>(null);
-    const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+const Home: NextPage = () => {
+    const [selectedGender, setSelectedGender] = useState<Gender>("women")
+    const [selectedCategory, setSelectedCategory] = useState<ServiceCategory>(servicesData[selectedGender][0]?.name || "")
 
-    // Debounce search input
-    useEffect(() => {
-        const handler = setTimeout(() => setSearchQuery(searchInput), 300);
-        return () => clearTimeout(handler);
-    }, [searchInput]);
+    // Main service cards data
+    const mainServices: Array<{
+        title: string
+        subtitle: string
+        image: string
+        imagePosition: "left" | "right"
+    }> = [
+            {
+                title: "Hair Services",
+                subtitle: "Professional haircuts and styling",
+                image: "/services/service-1.svg",
+                imagePosition: "left",
+            },
+            {
+                title: "Facial & Skin Care",
+                subtitle: "Rejuvenating treatments for your skin",
+                image: "/services/service-2.svg",
+                imagePosition: "right",
+            },
+            {
+                title: selectedGender === "men" ? "Beard Grooming" : "Threading & Waxing",
+                subtitle: selectedGender === "men" ? "Expert beard styling and care" : "Precision threading and waxing services",
+                image: "/services/service-3.svg",
+                imagePosition: "left",
+            },
+        ]
 
-    // Memoized filtered products
-    const filteredProducts = useMemo(() => products.filter(product => {
-        const searchTerms = searchQuery.toLowerCase().split(' ');
-        const matchesSearch = searchTerms.every(term =>
-            product.name.toLowerCase().includes(term) ||
-            product.description.toLowerCase().includes(term)
-        );
+    const handleBookNow = (serviceTitle: string) => {
+        // Find the matching category in the services data
+        const category = servicesData[selectedGender].find(
+            (cat) => cat.name.includes(serviceTitle.split(" ")[0] ?? "") || cat.name.includes(serviceTitle ?? ""),
+        )
 
-        const matchesPrice = product.price >= priceRange[0] &&
-            product.price <= priceRange[1];
+        if (category) {
+            setSelectedCategory(category.name)
+            const serviceSection = document.getElementById("services")
+            if (serviceSection) {
+                serviceSection.scrollIntoView({ behavior: "smooth" })
+            }
+        }
+    }
 
-        return matchesSearch && matchesPrice;
-    }), [searchQuery, priceRange]);
-
-    // Memoized sorted products
-    const sortedProducts = useMemo(() => {
-        return [...filteredProducts].sort((a, b) =>
-            sortOrder === 'asc' ? a.price - b.price :
-                sortOrder === 'desc' ? b.price - a.price : 0
-        );
-    }, [filteredProducts, sortOrder]);
-
-    // Reset all filters
-    const resetFilters = useCallback(() => {
-        setSearchInput('');
-        setPriceRange([0, 100]);
-    }, []);
+    // Get the selected category data
+    const selectedCategoryData = servicesData[selectedGender].find((category) => category.name === selectedCategory)
 
     return (
-        <div className="container mx-auto p-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                {/* Simplified Sidebar */}
-                <div className="border rounded-lg p-6 h-fit space-y-6">
-                    <div className="space-y-4">
-                        <h3 className="font-medium">Price Range</h3>
-                        <div className="flex justify-between mb-2 text-sm">
-                            <span>${priceRange[0]}</span>
-                            <span>${priceRange[1]}</span>
-                        </div>
-                        <div className="relative pb-4">
-                            <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={priceRange[1]}
-                                onChange={e => setPriceRange([0, Number(e.target.value)])}
-                                className="absolute w-full"
-                            />
-                        </div>
-                    </div>
+        <main className="flex min-h-screen flex-col items-center bg-white">
+            <div className="w-11/12 mx-auto px-4 py-6">
+                {/* Gender Selection Tabs */}
+                <Tabs
+                    defaultValue={selectedGender}
+                    className="w-full mb-6"
+                    onValueChange={(value) => {
+                        setSelectedGender(value as Gender)
+                        setSelectedCategory(servicesData[value as Gender][0]?.name || "")
+                    }}
+                >
+                    <TabsList className="grid w-full max-w-md mx-auto grid-cols-2">
+                        <TabsTrigger value="women">Women</TabsTrigger>
+                        <TabsTrigger value="men">Men</TabsTrigger>
+                    </TabsList>
+                </Tabs>
 
-                    {/* <div className="space-y-4">
-            <h3 className="font-medium">Rating</h3>
-            {[4.5, 4, 3].map(rating => (
-              <div key={rating} className="flex items-center gap-3">
-                <Checkbox
-                  id={`rating-${rating}`}
-                  checked={product.rating >= rating}
-                  onCheckedChange={checked => {
-                    // Implement rating filter logic here if needed
-                  }}
+                {/* Main Carousel */}
+                <Carousel
+                    images={[
+                        "/services/carosuel.svg",
+                        "/services/carosuel.svg",
+                        "/services/carosuel.svg",
+                        "/services/carosuel.svg",
+                    ]}
                 />
-                <label htmlFor={`rating-${rating}`} className="text-sm">
-                  {rating}+ Stars
-                </label>
-              </div>
-            ))}
-          </div> */}
 
-                    <Button
-                        variant="outline"
-                        className="w-full mt-4"
-                        onClick={resetFilters}
-                    >
-                        Clear All Filters
-                    </Button>
+                {/* Service Cards */}
+                <div className="mt-8 space-y-4">
+                    {mainServices.map((service, index) => (
+                        <ServiceCard
+                            key={index}
+                            title={service.title}
+                            subtitle={service.subtitle}
+                            image={service.image}
+                            imagePosition={service.imagePosition}
+                            onBookNow={() => handleBookNow(service.title)}
+                        />
+                    ))}
                 </div>
 
-                {/* Main Content */}
-                <div className="md:col-span-3">
-                    <div className="flex flex-col md:flex-row gap-4 mb-6">
-                        <div className="relative flex-grow">
-                            <Input
-                                placeholder="Search products..."
-                                value={searchInput}
-                                onChange={e => setSearchInput(e.target.value)}
-                                className="pr-10"
-                            />
-                            <Search className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        </div>
+                {/* Service Categories */}
+                <div className="mt-8" id="services">
+                    <h2 className="text-xl font-bold mb-4">{selectedGender === "men" ? "Men's" : "Women's"} Services</h2>
 
-                        <div className="flex gap-2 flex-wrap">
+                    <div className="flex flex-wrap gap-2 mb-4">
+                        {servicesData[selectedGender].map((category, index) => (
                             <Button
-                                variant={!sortOrder ? 'default' : 'outline'}
-                                onClick={() => setSortOrder(null)}
-                                className="gap-2"
+                                key={index}
+                                variant={selectedCategory === category.name ? "default" : "outline"}
+                                onClick={() => setSelectedCategory(category.name)}
+                                className="text-sm"
                             >
-                                {!sortOrder && <Check className="h-4 w-4" />}
-                                New Arrivals
+                                {category.name.split(". ")[1] || category.name}
                             </Button>
-                            <Button
-                                variant={sortOrder === 'asc' ? 'default' : 'outline'}
-                                onClick={() => setSortOrder(sortOrder === 'asc' ? null : 'asc')}
-                                className="gap-2"
-                            >
-                                {sortOrder === 'asc' && <Check className="h-4 w-4" />}
-                                Price Low-High
-                            </Button>
-                            <Button
-                                variant={sortOrder === 'desc' ? 'default' : 'outline'}
-                                onClick={() => setSortOrder(sortOrder === 'desc' ? null : 'desc')}
-                                className="gap-2"
-                            >
-                                {sortOrder === 'desc' && <Check className="h-4 w-4" />}
-                                Price High-Low
-                            </Button>
-                        </div>
+                        ))}
                     </div>
 
-                    <div className="mb-4 text-sm text-muted-foreground">
-                        Showing {sortedProducts.length} results
-                    </div>
+                    {/* Services for the selected category */}
+                    <div className="space-y-4">
+                        {selectedCategoryData?.services.map((service, serviceIndex) => (
+                            <div key={serviceIndex} className="border rounded-lg p-4 bg-white">
+                                <div className="flex items-center gap-4">
+                                    <div className="shrink-0">
+                                        <Image
+                                            src={`/services/service-${(serviceIndex % 6) + 1}.svg`}
+                                            alt={service.name}
+                                            width={150}
+                                            height={150}
+                                            className="object-cover rounded"
+                                        />
+                                    </div>
+                                    <div className="flex flex-col justify-center gap-y-3 items-start flex-1">
+                                        <div className="flex justify-between w-full">
+                                            <h3 className="font-bold text-lg">{service.name}</h3>
+                                            {service.price && <span className="font-semibold text-primary">{service.price}</span>}
+                                        </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {sortedProducts.map(product => (
-                            <ProductCard key={product.id} product={product} />
+                                        {/* Sub-services if available */}
+                                        {"subServices" in service && service.subServices && service.subServices.length > 0 && (
+                                            <div className="w-full space-y-2 mt-2">
+                                                {service.subServices.map((subService, subIndex) => (
+                                                    <div key={subIndex} className="flex justify-between items-center text-sm border-b pb-2">
+                                                        <span>{subService.name}</span>
+                                                        <span className="text-primary">{subService.price}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+
+                                        <BookingModal
+                                            serviceName={service.name}
+                                            price={service.price || "Price on consultation"}
+                                            imageUrl={`/services/service-${(serviceIndex % 6) + 1}.svg`}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 </div>
+
+                {/* View All Services Button */}
+                <div className="mt-8 flex justify-center">
+                    <Button variant="outline" className="flex items-center gap-2">
+                        View All {selectedGender === "men" ? "Men's" : "Women's"} Services
+                        <ChevronRight className="h-4 w-4" />
+                    </Button>
+                </div>
             </div>
-        </div>
-    );
+        </main>
+    )
 }
 
-function ProductCard({ product }: { product: Product }) {
-    return (
-        <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-            <div className="aspect-square overflow-hidden">
-                <Image
-                    src={product.imageUrl}
-                    width={200}
-                    height={200}
-                    alt={product.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform"
-                />
-            </div>
-            <CardContent className="p-4">
-                <h3 className="font-medium mb-1">{product.name}</h3>
-                <p className="text-sm text-muted-foreground">{product.description}</p>
-                <div className="flex items-center justify-between mt-2">
-                    <p className="font-bold">${product.price}</p>
-                    <div className="flex items-center gap-1">
-                        <span className="text-sm">{product.rating}</span>
-                        <svg className="w-4 h-4 fill-current text-yellow-500" viewBox="0 0 20 20">
-                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                    </div>
-                </div>
-            </CardContent>
-            <CardFooter className="p-4 pt-0">
-                <Button variant="outline" className="w-full rounded-full">
-                    Add to Cart
-                </Button>
-            </CardFooter>
-        </Card>
-    );
-}
+export default Home

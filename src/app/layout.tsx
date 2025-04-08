@@ -6,6 +6,7 @@ import { Geist } from "next/font/google";
 import { TRPCReactProvider } from "@/trpc/react";
 import Navbar from "@/components/Navbar";
 import { Footer } from "@/components/footer";
+import { Toaster } from "sonner";
 
 export const metadata: Metadata = {
   title: "Harsh Saloon",
@@ -25,9 +26,8 @@ export default function RootLayout({
     <html lang="en" className={`${geist.variable}`}>
       <body>
         <TRPCReactProvider>
-          <Navbar />
           {children}
-          <Footer />
+          <Toaster />
         </TRPCReactProvider>
       </body>
     </html>
