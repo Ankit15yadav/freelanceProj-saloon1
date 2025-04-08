@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
+import useLocalStorage from "use-local-storage"
 
 // Define the form validation schema using Zod
 const loginSchema = z.object({
@@ -20,6 +21,8 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>
 
 export default function AdminLogin() {
+    const [userId, setUserId] = useLocalStorage<string | null>('userId', null);
+
     const router = useRouter()
     const {
         register,
@@ -39,14 +42,18 @@ export default function AdminLogin() {
 
             const response = await res.json()
 
-            console.log(response);
-
             if (!res.ok) {
                 toast.error(response?.message || "Login failed")
+                return;
             } else {
                 toast.success("Login successful! Redirecting...")
                 // Redirect to the admin dashboard
+                if (response?.user) {
+                    setUserId(response?.user?.id)
+                }
+
                 router.push("/admin/dashboard")
+
             }
         } catch (error) {
             console.error("Login error:", error)

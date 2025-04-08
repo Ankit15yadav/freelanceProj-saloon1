@@ -3,7 +3,15 @@
 import { useState } from "react"
 import Image from "next/image"
 import { Heart } from "lucide-react"
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
+import {
+    Dialog,
+    DialogTrigger,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -25,6 +33,12 @@ export function BookingModal({ serviceName, price, imageUrl, buttonText = "Book 
                 </button>
             </DialogTrigger>
             <DialogContent className="max-w-[95vw] sm:max-w-[600px] md:max-w-[800px] lg:max-w-[900px] p-0 overflow-hidden">
+                {/* 1. Add a header with a title (and optional description) */}
+                <DialogHeader>
+                    <DialogTitle className="flex text-center items-center justify-center mt-2 font-bold text-2xl" > Booking</DialogTitle>
+                    {/* <DialogDescription>Fill in your details to reserve your spot.</DialogDescription> */}
+                </DialogHeader>
+
                 <div className="flex flex-col md:flex-row">
                     {/* Image Section */}
                     <div className="relative w-full md:w-1/2 h-[250px] md:h-auto">
@@ -45,16 +59,13 @@ export function BookingModal({ serviceName, price, imageUrl, buttonText = "Book 
                     {/* Form Section */}
                     <div className="w-full md:w-1/2 p-4 md:p-6 space-y-4">
                         <h2 className="text-xl md:text-2xl font-semibold">{serviceName}</h2>
-
                         <div className="flex items-center gap-2">
                             <span className="bg-green-100 text-green-800 px-2 py-0.5 text-xs rounded">Special Offer</span>
                         </div>
-
                         <div className="flex items-baseline">
                             <span className="text-sm">$</span>
                             <span className="text-3xl md:text-4xl font-bold">{price}</span>
                         </div>
-
                         <p className="text-gray-500 text-sm">Select your booking details</p>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -83,11 +94,15 @@ export function BookingModal({ serviceName, price, imageUrl, buttonText = "Book 
                                 </div>
                             ))}
                         </div>
-
-                        <Button className="w-full mt-4 sm:mt-6">Book Now</Button>
                     </div>
                 </div>
+
+                {/* 3. Optionally add a footer for your action button */}
+                <DialogFooter>
+                    <Button className="w-full sm:w-auto">{buttonText}</Button>
+                </DialogFooter>
             </DialogContent>
         </Dialog>
     )
 }
+

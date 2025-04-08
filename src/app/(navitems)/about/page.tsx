@@ -265,28 +265,46 @@ const About = () => {
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
                         {[
                             {
-                                name: 'Emma Thompson',
-                                role: 'Founder & Master Stylist',
-                                image: '/team/emma.jpg',
-                                bio: 'With over 15 years of experience, Emma specializes in bridal and editorial styles.'
+                                id: 1,
+                                name: 'Ramharsh Sen',
+                                role: '40 Years of Expertise',
+                                image: '/team/ramharsh-sen.jpg',
+                                bio: 'A true industry veteran with four decades of experience, Ramharsh Sen has mastered the art of hairstyling and salon management, setting the foundation for Harsh Salon’s excellence.'
                             },
                             {
-                                name: 'Sarah Williams',
-                                role: 'Senior Colorist',
-                                image: '/team/sarah.jpg',
-                                bio: 'Sarah is our color expert, creating stunning custom shades for every client.'
+                                id: 2,
+                                name: 'Satish Sen',
+                                role: '7 Years | L’Oréal, Matrix | London Certified',
+                                image: '/team/satish-sen.jpg',
+                                bio: 'An internationally trained hair color expert and precision haircut specialist, Satish blends global trends with personalized styles, bringing a touch of artistry to every transformation.'
                             },
                             {
-                                name: 'Michael Brown',
-                                role: 'Spa Director',
-                                image: '/team/michael.jpg',
-                                bio: 'Michael oversees our spa services, ensuring every treatment is perfect.'
+                                id: 3,
+                                name: 'Pintu Sen',
+                                role: '18 Years of Craftsmanship',
+                                image: '/team/pintu-sen.jpg',
+                                bio: 'With nearly two decades in the industry, Pintu Sen is known for his impeccable styling techniques and a keen eye for modern hair trends.'
                             },
                             {
-                                name: 'Jessica Lee',
-                                role: 'Makeup Artist',
-                                image: '/team/jessica.jpg',
-                                bio: 'Jessica creates flawless looks for weddings and special events.'
+                                id: 4,
+                                name: 'Uday Sen',
+                                role: '14 Years of Styling Expertise',
+                                image: '/team/uday-sen.jpg',
+                                bio: 'From classic cuts to contemporary styles, Uday Sen specializes in precision cuts and customized looks tailored to each client’s personality.'
+                            },
+                            {
+                                id: 5,
+                                name: 'Rajesh Sen',
+                                role: '19 Years of Hair & Grooming Excellence',
+                                image: '/team/rajesh-sen.jpg',
+                                bio: 'A grooming expert with a passion for hair treatments, Rajesh Sen ensures every client leaves with a flawless finish and renewed confidence.'
+                            },
+                            {
+                                id: 6,
+                                name: 'Ravina',
+                                role: 'Beauty & Skincare Specialist',
+                                image: '/team/ravina.jpg',
+                                bio: 'With a deep understanding of skin and beauty, Ravina brings expertise in facials, makeup, and skincare solutions that enhance natural radiance.'
                             }
                         ].map((member, index) => (
                             <motion.div

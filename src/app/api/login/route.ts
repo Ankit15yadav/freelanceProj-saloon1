@@ -11,16 +11,14 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Missing email or password' }, { status: 400 })
         }
 
-        const user = await db.user.findUnique({
-            where: { email },
-        })
+        const user = await db.user.findUnique({ where: { email } })
 
         if (!user) {
-            return NextResponse.json({ message: "No user found with this email" }, { status: 404 })
+            return NextResponse.json({ message: 'No user found with this email' }, { status: 404 })
         }
 
         if (password !== user.password) {
-            return NextResponse.json({ message: "Invalid password" }, { status: 401 })
+            return NextResponse.json({ message: 'Invalid password' }, { status: 401 })
         }
 
         const token = jwt.sign(
@@ -29,12 +27,14 @@ export async function POST(request: NextRequest) {
             { expiresIn: '1h' }
         )
 
-        // console.log(token);
+        const response = NextResponse.json({
+            message: 'Login successful',
+            user: { id: user.id, email: user.email }, // 🧠 include user info for client
+        })
 
-        const response = NextResponse.json({ message: 'Login successful' })
         response.cookies.set('token', token, {
             httpOnly: true,
-            maxAge: 60 * 60, // 1 hour
+            maxAge: 60 * 60 * 60,
             path: '/',
         })
 

@@ -2,10 +2,10 @@ import React from 'react'
 
 type Props = {}
 
-const DashboardPage = (props: Props) => {
+const Dashboard = (props: Props) => {
     return (
-        <div>DashboardPage</div>
+        <div>Dashboard</div>
     )
 }
 
-export default DashboardPage
+export default Dashboard
