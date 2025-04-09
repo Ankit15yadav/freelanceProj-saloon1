@@ -5,6 +5,7 @@ import { User2 } from "lucide-react"
 import {
     Sidebar,
     SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupLabel,
     SidebarHeader,
@@ -14,9 +15,10 @@ import {
     SidebarRail,
 } from "@/components/ui/sidebar"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
-import path from "path"
+import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
+import { Button } from "./ui/button"
+import { toast } from "sonner"
 
 // This is sample data.
 const data = {
@@ -42,8 +44,28 @@ const data = {
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     const pathname = usePathname();
+    const router = useRouter();
 
+    const handleLogout = async () => {
+        try {
 
+            const res = await fetch("/api/logout", {
+                method: 'POST'
+            })
+
+            if (res.ok) {
+                toast.success("Logged out successfully");
+                router.push("/login")
+            }
+            else {
+                toast.error("Logout failed")
+            }
+
+        } catch (error) {
+            console.log(error);
+            toast.error("something went wrong");
+        }
+    }
 
     return (
         <Sidebar {...props}>
@@ -86,6 +108,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </SidebarMenu>
                 </SidebarGroup>
             </SidebarContent>
+            <SidebarFooter className='bg-inherit'>
+                <Button className="bg-red-500/60 text-black text-sm font-medium hover:bg-red-400"
+                    onClick={handleLogout}
+                >
+                    Logout
+                </Button>
+            </SidebarFooter>
             <SidebarRail />
         </Sidebar>
     )

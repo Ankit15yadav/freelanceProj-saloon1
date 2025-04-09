@@ -21,6 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
+import { toast } from "sonner"
 
 // Product type definition
 interface Product {
@@ -100,10 +101,10 @@ export default function ProductsPage() {
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
-        setNewProduct({
-            ...newProduct,
-            [name]: name === "price" || name === "rating" ? Number.parseFloat(value) : value,
-        })
+        setNewProduct((prev) => ({
+            ...prev,
+            [name]: value,
+        }))
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,37 +114,48 @@ export default function ProductsPage() {
         }
     }
 
-    const handleUpload = () => {
-        if (!selectedFile) return
+    const handleUpload = async () => {
+        if (!selectedFile) {
+            toast.error("Upload file first");
+        }
 
         setIsUploading(true)
 
-        // Simulate upload process
-        setTimeout(() => {
-            setIsUploading(false)
-            setIsVerified(true)
-            // In a real app, this would be the URL returned from the cloud storage
+        try {
+
+            const formData = new FormData();
+            if (selectedFile) {
+                formData.append('file', selectedFile);
+            }
+
+            const response = await fetch("/api/image", {
+                method: 'POST',
+                body: formData,
+            })
+
+            if (!response) {
+                toast.error("Error while uploading")
+            }
+
+            const data = await response.json();
             setNewProduct({
                 ...newProduct,
-                image: "/placeholder.svg?height=200&width=200",
+                image: data?.secureUrl
             })
-        }, 1500)
+            setIsVerified(true);
+
+        } catch (error) {
+            toast.error(error as string)
+        }
+        finally {
+            setIsUploading(false);
+        }
     }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        const id = (products.length + 1).toString()
-        setProducts([...products, { id, ...newProduct }])
-        setNewProduct({
-            name: "",
-            description: "",
-            price: "0",
-            rating: 4.0,
-            image: "/placeholder.svg?height=200&width=200",
-        })
-        setSelectedFile(null)
-        setIsVerified(false)
-        setOpen(false)
+
+        console.log(newProduct);
     }
 
     // Format price in rupees

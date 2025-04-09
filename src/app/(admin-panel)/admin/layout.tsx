@@ -14,6 +14,7 @@ import {
     SidebarInset,
     SidebarProvider,
     SidebarTrigger,
+    useSidebar,
 } from "@/components/ui/sidebar"
 import { usePathname } from "next/navigation"
 
