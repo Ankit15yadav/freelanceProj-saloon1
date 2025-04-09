@@ -29,10 +29,27 @@ model Booking {
     id                String   @id @default(cuid())
     name              String
     phoneNumber       String
-    date              DateTime
+    date              String
     timeSlot          String
     modeOfReservation String
-    coupon            String?
+    coupon            String?  @default("None")
     createdAt         DateTime @default(now())
     updatedAt         DateTime @updatedAt
+    status            Status?  @default(PENDING)
+    serviceName       String?
+    servicePrice      String?
+}
+
+model Product {
+    id          String @id @default(uuid())
+    name        String
+    description String
+    price       String
+    rating      String
+    image       String
+}
+
+enum Status {
+    PENDING
+    VIEWED
 }

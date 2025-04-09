@@ -1,19 +1,28 @@
-"use client"
+'use client'
 
-import { useState } from "react"
-import Image from "next/image"
-import { Heart } from "lucide-react"
+import { useState } from 'react'
+import Image from 'next/image'
+import { Heart } from 'lucide-react'
 import {
     Dialog,
     DialogTrigger,
     DialogContent,
     DialogHeader,
     DialogTitle,
-    DialogDescription,
     DialogFooter,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+} from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+    Select,
+    SelectTrigger,
+    SelectValue,
+    SelectContent,
+    SelectItem,
+} from '@/components/ui/select'
+import { cn } from '@/lib/utils'
+import { api } from '@/trpc/react'
+import { toast } from 'sonner'
 
 interface BookingModalProps {
     serviceName: string
@@ -22,87 +31,208 @@ interface BookingModalProps {
     buttonText?: string
 }
 
-export function BookingModal({ serviceName, price, imageUrl, buttonText = "Book Now" }: BookingModalProps) {
+type BookingFormState = {
+    name: string
+    contactNumber: string
+    date: string
+    timeSlot: string
+    modeOfReservation: string
+    loyaltyCoupon: string
+}
+
+export function BookingModal({
+    serviceName,
+    price,
+    imageUrl,
+    buttonText = 'Book Now',
+}: BookingModalProps) {
     const [isFavorite, setIsFavorite] = useState(false)
+    const [open, setOpen] = useState<boolean>(false);
+    const [form, setForm] = useState<BookingFormState>({
+        name: '',
+        contactNumber: '',
+        date: '',
+        timeSlot: '',
+        modeOfReservation: '',
+        loyaltyCoupon: '',
+    })
+    const createBooking = api.booking.insertBooking.useMutation();
+
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement>
+    ) => {
+        const { name, value } = e.target
+        setForm((prev) => ({ ...prev, [name]: value }))
+    }
+
+    const handleSelectChange =
+        (field: keyof BookingFormState) => (value: string) => {
+            setForm((prev) => ({ ...prev, [field]: value }))
+        }
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const bookingData = {
+            serviceName,
+            price,
+            imageUrl,
+            ...form,
+        }
+        console.log('Booking Confirmed:', bookingData)
+        // TODO: Add submission logic (API or toast)
+
+        await createBooking.mutateAsync({
+            coupon: form.loyaltyCoupon,
+            name: form.name,
+            date: form.date,
+            modeOfReservation: form.modeOfReservation,
+            phone: form.contactNumber,
+            timeSlot: form.timeSlot,
+            service: bookingData.serviceName,
+            price: bookingData.price
+        }, {
+            onSuccess: () => {
+                toast.success("Booking Created Successfully");
+                setOpen(false);
+            }
+        })
+
+    }
 
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen} >
             <DialogTrigger asChild>
-                <button className="px-4 py-2 text-sm border border-gray-300 rounded-lg bg-gray-200 hover:bg-gray-100 text-black">
+                <Button variant="outline" className="bg-muted text-sm">
                     {buttonText}
-                </button>
+                </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-[95vw] sm:max-w-[600px] md:max-w-[800px] lg:max-w-[900px] p-0 overflow-hidden">
-                {/* 1. Add a header with a title (and optional description) */}
+
+            <DialogContent className="max-w-[95vw] md:max-w-2xl lg:max-w-4xl p-4 sm:p-6">
                 <DialogHeader>
-                    <DialogTitle className="flex text-center items-center justify-center mt-2 font-bold text-2xl" > Booking</DialogTitle>
-                    {/* <DialogDescription>Fill in your details to reserve your spot.</DialogDescription> */}
+                    <DialogTitle className="text-center text-xl sm:text-2xl font-semibold">
+                        Book {serviceName}
+                    </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-col md:flex-row">
-                    {/* Image Section */}
-                    <div className="relative w-full md:w-1/2 h-[250px] md:h-auto">
-                        <Image
-                            src={imageUrl || "/placeholder.svg?height=600&width=400"}
-                            alt={serviceName}
-                            fill
-                            className="object-cover rounded-t-lg md:rounded-none md:rounded-l-lg"
-                        />
-                        <button
-                            className="absolute top-4 left-4 bg-white/20 backdrop-blur-sm p-2 rounded-full"
-                            onClick={() => setIsFavorite(!isFavorite)}
-                        >
-                            <Heart className={`h-5 w-5 ${isFavorite ? "fill-red-500 text-red-500" : "text-white"}`} />
-                        </button>
-                    </div>
-
-                    {/* Form Section */}
-                    <div className="w-full md:w-1/2 p-4 md:p-6 space-y-4">
-                        <h2 className="text-xl md:text-2xl font-semibold">{serviceName}</h2>
-                        <div className="flex items-center gap-2">
-                            <span className="bg-green-100 text-green-800 px-2 py-0.5 text-xs rounded">Special Offer</span>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left: Image Preview */}
+                        <div className="relative w-full h-64 lg:h-full rounded-xl overflow-hidden shadow-sm">
+                            <Image
+                                src={imageUrl || '/placeholder.svg'}
+                                alt={serviceName}
+                                fill
+                                className="object-cover"
+                            />
+                            <button
+                                type="button"
+                                onClick={() => setIsFavorite((prev) => !prev)}
+                                className="absolute top-3 right-3 bg-white/80 backdrop-blur-md rounded-full p-2 shadow"
+                            >
+                                <Heart
+                                    className={cn('w-5 h-5 transition-colors', {
+                                        'fill-red-500 text-red-500': isFavorite,
+                                        'text-muted-foreground': !isFavorite,
+                                    })}
+                                />
+                            </button>
                         </div>
-                        <div className="flex items-baseline">
-                            <span className="text-sm">$</span>
-                            <span className="text-3xl md:text-4xl font-bold">{price}</span>
-                        </div>
-                        <p className="text-gray-500 text-sm">Select your booking details</p>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            {[
-                                { label: "Name", options: ["John Doe", "Jane Smith"] },
-                                { label: "Contact Number", options: ["+1 (123) 456-7890", "+1 (456) 789-0123"] },
-                                { label: "Date", options: ["Today", "Tomorrow", "Next Week"] },
-                                { label: "Time-Slot", options: ["9:00 AM - 11:00 AM", "1:00 PM - 3:00 PM", "5:00 PM - 7:00 PM"] },
-                                { label: "Mode of Reservation", options: ["Online", "Phone", "In-Person"] },
-                                { label: "Loyalty Coupon", options: ["None", "10% Off", "Free Add-on"] }
-                            ].map(({ label, options }, index) => (
-                                <div key={index} className="space-y-2">
-                                    <label className="text-sm font-medium">{label}</label>
-                                    <Select>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {options.map((option, i) => (
-                                                <SelectItem key={i} value={option.toLowerCase().replace(/ /g, "-")}>
-                                                    {option}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                        {/* Right: Form */}
+                        <div className="space-y-4">
+                            <div>
+                                <h3 className="text-lg font-medium">{serviceName}</h3>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-2xl font-bold text-primary">${price}</span>
+                                    <span className="text-muted-foreground text-sm">before taxes</span>
                                 </div>
-                            ))}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <Input
+                                    name="name"
+                                    placeholder="Full Name"
+                                    value={form.name}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                <Input
+                                    name="contactNumber"
+                                    placeholder="Contact Number"
+                                    value={form.contactNumber}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+                                <Input
+                                    name="date"
+                                    type="date"
+                                    value={form.date}
+                                    onChange={handleInputChange}
+                                    required
+                                />
+
+                                <Select
+                                    value={form.timeSlot}
+                                    onValueChange={handleSelectChange('timeSlot')}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select time slot" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {['9:00 AM - 11:00 AM', '1:00 PM - 3:00 PM', '5:00 PM - 7:00 PM'].map(
+                                            (slot) => (
+                                                <SelectItem key={slot} value={slot}>
+                                                    {slot}
+                                                </SelectItem>
+                                            )
+                                        )}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select
+                                    value={form.modeOfReservation}
+                                    onValueChange={handleSelectChange('modeOfReservation')}
+                                    required
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Reservation Type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {['Online', 'Phone', 'In-Person'].map((mode) => (
+                                            <SelectItem key={mode} value={mode}>
+                                                {mode}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+
+                                <Select
+                                    value={form.loyaltyCoupon}
+                                    onValueChange={handleSelectChange('loyaltyCoupon')}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Apply Coupon (optional)" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {['None', '10% Off', 'Free Add-on'].map((coupon) => (
+                                            <SelectItem key={coupon} value={coupon}>
+                                                {coupon}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                {/* 3. Optionally add a footer for your action button */}
-                <DialogFooter>
-                    <Button className="w-full sm:w-auto">{buttonText}</Button>
-                </DialogFooter>
+                    <DialogFooter className="flex justify-end pt-2">
+                        <Button type="submit" className="w-full md:w-auto">
+                            Confirm Booking
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )
 }
-
