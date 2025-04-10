@@ -97,7 +97,7 @@ export default function ProductsPage() {
 
             <div className="flex flex-col md:flex-row gap-6 relative">
                 {/* Filter sidebar - make it sticky */}
-                <div className="w-full md:w-64 shrink-0 md:sticky md:top-4 md:self-start h-fit">
+                <div className="w-full md:w-64 shrink-0 md:sticky md:top-20 self-start">
                     <div className="border rounded-lg p-4 space-y-4">
                         <h2 className="font-semibold text-lg">Filters</h2>
 

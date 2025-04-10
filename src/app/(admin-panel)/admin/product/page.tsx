@@ -314,7 +314,8 @@ function ProductCard({ product }: { product: Product }) {
                 <Image
                     src={product.image || "/placeholder.svg"}
                     alt={product.name}
-                    fill
+                    width={300}
+                    height={300}
                     className="object-cover"
                 />
             </div>
