@@ -30,7 +30,8 @@ if [ -x "$(command -v docker)" ]; then
   DOCKER_CMD="docker"
 elif [ -x "$(command -v podman)" ]; then
   DOCKER_CMD="podman"
-fi
+fichr
+
 
 if ! $DOCKER_CMD info > /dev/null 2>&1; then
   echo "$DOCKER_CMD daemon is not running. Please start $DOCKER_CMD and try again."

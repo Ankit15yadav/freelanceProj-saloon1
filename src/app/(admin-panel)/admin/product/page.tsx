@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Image from "next/image"
-import { Check, Plus, Star } from "lucide-react"
+import { Check, Plus, Star, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -22,6 +22,9 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import { api } from "@/trpc/react"
+import useRefetch from "@/hooks/use-refetch"
+import SalonLoader from "@/components/Loading"
 
 // Product type definition
 interface Product {
@@ -29,75 +32,38 @@ interface Product {
     name: string
     description: string
     price: string
-    rating: number
+    rating: string
     image: string
 }
 
-// Demo data
-const demoProducts: Product[] = [
-    {
-        id: "1",
-        name: "Premium Headphones",
-        description: "Noise-cancelling wireless headphones with premium sound quality.",
-        price: "24999",
-        rating: 4.7,
-        image: "/services/service-3.svg",
-    },
-    {
-        id: "2",
-        name: "Smart Watch",
-        description: "Track your fitness and stay connected with this sleek smart watch.",
-        price: "19999",
-        rating: 4.5,
-        image: "/services/service-4.svg",
-    },
-    {
-        id: "3",
-        name: "Wireless Keyboard",
-        description: "Ergonomic wireless keyboard with customizable RGB lighting.",
-        price: "8999",
-        rating: 4.2,
-        image: "/services/service-5.svg",
-    },
-    {
-        id: "4",
-        name: "Premium Headphones",
-        description: "Noise-cancelling wireless headphones with premium sound quality.",
-        price: "24999",
-        rating: 4.7,
-        image: "/services/service-3.svg",
-    },
-    {
-        id: "5",
-        name: "Smart Watch",
-        description: "Track your fitness and stay connected with this sleek smart watch.",
-        price: "19999",
-        rating: 4.5,
-        image: "/services/service-4.svg",
-    },
-    {
-        id: "6",
-        name: "Wireless Keyboard",
-        description: "Ergonomic wireless keyboard with customizable RGB lighting.",
-        price: "8999",
-        rating: 4.2,
-        image: "/services/service-5.svg",
-    },
-]
-
 export default function ProductsPage() {
-    const [products, setProducts] = useState<Product[]>(demoProducts)
+
+    const initialproduct: Product = {
+        description: '',
+        id: '',
+        image: '',
+        name: '',
+        price: '',
+        rating: ''
+    }
+
+    // const [products, setProducts] = useState<Product[]>(demoProducts)
     const [newProduct, setNewProduct] = useState<Omit<Product, "id">>({
         name: "",
         description: "",
         price: "0",
-        rating: 4.0,
-        image: "/placeholder.svg?height=200&width=200",
+        rating: "4.0",
+        image: "",
     })
     const [open, setOpen] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    // routes for getting and submitting product data
+    const createProduct = api.products.createProduct.useMutation();
+    const products = api.products.getProducts.useQuery();
+
+    const refetch = useRefetch();
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target
@@ -113,6 +79,7 @@ export default function ProductsPage() {
             setIsVerified(false)
         }
     }
+
 
     const handleUpload = async () => {
         if (!selectedFile) {
@@ -152,16 +119,47 @@ export default function ProductsPage() {
         }
     }
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
 
-        console.log(newProduct);
+        try {
+
+            await createProduct.mutateAsync({
+                description: newProduct.description,
+                image: newProduct.image,
+                name: newProduct.name,
+                price: newProduct.price,
+                rating: newProduct.rating,
+            }, {
+                onSuccess: () => {
+                    setNewProduct(initialproduct);
+                    setIsVerified(false);
+                    toast.success("product created successfully");
+                    setOpen(false);
+                    refetch();
+                    setSelectedFile(null);
+                }
+            })
+
+        } catch (error) {
+            toast.error("Error while creating product")
+            console.log(error);
+            throw new Error("Error while creating product");
+        }
     }
 
-    // Format price in rupees
-    const formatPrice = (price: number) => {
-        return `₹${price.toLocaleString("en-IN")}`
+    if (products.isPending) {
+        return (
+            <div className="flex flex-col items-center justify-center w-full min-h-screen">
+                <SalonLoader
+                    speed="normal"
+                />
+                Loading Data...
+            </div>
+
+        )
     }
+
 
     return (
         <div className="container mx-auto py-8">
@@ -264,8 +262,12 @@ export default function ProductsPage() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit" disabled={!isVerified && selectedFile !== null}>
-                                    Create Product
+                                <Button type="submit" disabled={!isVerified && selectedFile === null}>
+                                    {
+                                        createProduct.isPending ?
+                                            ('Creating...') :
+                                            ("Create Product")
+                                    }
                                 </Button>
                             </DialogFooter>
                         </form>
@@ -274,50 +276,74 @@ export default function ProductsPage() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-                {products.map((product) => (
+                {products?.data?.map((product) => (
                     <ProductCard key={product.id} product={product} />
                 ))}
-                <CreateProductCard onClick={() => setOpen(true)} />
             </div>
         </div>
     )
 }
 
 function ProductCard({ product }: { product: Product }) {
+
+    const deleteProducts = api.products.deleteProduct.useMutation();
+    const refetch = useRefetch();
+
+    const handelDelete = async (ProductId: string) => {
+
+        try {
+
+            await deleteProducts.mutateAsync({
+                productId: ProductId
+            }, {
+                onSuccess: () => {
+                    toast.success("Product Deleted Successfully");
+                    refetch();
+                }
+            })
+
+        } catch (error) {
+            toast.error("Error while deleting product");
+            console.log(error);
+        }
+    }
+
     return (
-        <Card className="overflow-hidden h-full flex flex-col">
-            <div className="aspect-square relative bg-muted">
-                <Image src={product.image || "/placeholder.svg"} alt={product.name} fill className="object-cover" />
+        <Card className="overflow-hidden h-full flex flex-col p-2">
+            <div className="relative aspect-square bg-muted">
+                <Image
+                    src={product.image || "/placeholder.svg"}
+                    alt={product.name}
+                    fill
+                    className="object-cover"
+                />
             </div>
-            <CardHeader className="p-3">
+
+            <div className="p-1">
                 <h3 className="font-semibold text-sm line-clamp-1">{product.name}</h3>
                 <div className="text-sm font-bold">{product.price}</div>
-            </CardHeader>
-            <CardContent className="flex-grow p-3 pt-0">
-                <p className="text-xs text-muted-foreground line-clamp-2">{product.description}</p>
-            </CardContent>
-            <CardFooter className="p-3 pt-0">
+            </div>
+
+            <div className="flex-grow p-1">
+                <p className="text-xs text-muted-foreground line-clamp-2">
+                    {product.description}
+                </p>
+            </div>
+
+            <div className="p-1 flex items-center justify-between">
                 <div className="flex items-center text-xs">
                     <Star className="h-3 w-3 fill-primary text-primary mr-1" />
-                    <span>{product.rating.toFixed(1)}</span>
+                    <span>{product.rating}</span>
                 </div>
-            </CardFooter>
+                <div className="">
+                    <Trash2
+                        size={15} className="text-red-500 hover:text-orange-300 hover:cursor-pointer"
+                        onClick={() => handelDelete(product?.id)}
+                    />
+                </div>
+            </div>
         </Card>
-    )
+    );
 }
 
-function CreateProductCard({ onClick }: { onClick: () => void }) {
-    return (
-        <Card
-            className="overflow-hidden h-full flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors aspect-square"
-            onClick={onClick}
-        >
-            <CardContent className="flex flex-col items-center justify-center h-full p-4">
-                <div className="rounded-full bg-primary/10 p-4 mb-2">
-                    <Plus className="h-5 w-5 text-primary" />
-                </div>
-                <p className="font-medium text-xs text-center">Add Product</p>
-            </CardContent>
-        </Card>
-    )
-}
+

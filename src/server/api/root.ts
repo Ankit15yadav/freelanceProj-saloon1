@@ -1,6 +1,7 @@
 import { postRouter } from "@/server/api/routers/post";
 import { createCallerFactory, createTRPCRouter } from "@/server/api/trpc";
 import { Bookings } from "./routers/bookings";
+import { products } from "./routers/products";
 
 /**
  * This is the primary router for your server.
@@ -9,7 +10,8 @@ import { Bookings } from "./routers/bookings";
  */
 export const appRouter = createTRPCRouter({
   post: postRouter,
-  booking: Bookings
+  booking: Bookings,
+  products: products
 });
 
 // export type definition of API

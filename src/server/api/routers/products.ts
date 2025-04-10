@@ -24,5 +24,31 @@ export const products = createTRPCRouter({
                 rating: input.rating
             }
         })
+    }),
+
+    getProducts: publicProcedure.query(async ({ ctx }) => {
+
+        const products = await ctx.db.product.findMany();
+
+        return products;
+    }),
+
+    deleteProduct: publicProcedure.input(z.object({
+        productId: z.string()
+    })).mutation(async ({ ctx, input }) => {
+
+        if (!ctx) {
+            return;
+        }
+
+        if (input.productId === "") {
+            throw new Error("Product id is required");
+        }
+
+        return await ctx.db.product.delete({
+            where: {
+                id: input.productId
+            }
+        })
     })
 })
