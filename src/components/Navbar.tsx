@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import { Menu, ShoppingBag, X } from "lucide-react"
+import { LogIn, Menu, ShoppingBag, X } from "lucide-react"
 import { usePathname } from "next/navigation"
 
 interface NavItem {
@@ -101,10 +101,10 @@ const Navbar: React.FC = () => {
                         Book Now
                     </Link>
                     <Link
-                        href="/cart"
+                        href="/login"
                         className="p-2 rounded-md text-gray-900 hover:bg-gray-100 transition-colors"
                     >
-                        <ShoppingBag size={24} />
+                        <LogIn size={24} />
                     </Link>
                 </div>
 
