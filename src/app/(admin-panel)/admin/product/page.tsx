@@ -7,7 +7,7 @@ import Image from "next/image"
 import { Check, Plus, Star, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import {
     Dialog,
     DialogContent,
@@ -26,7 +26,6 @@ import { api } from "@/trpc/react"
 import useRefetch from "@/hooks/use-refetch"
 import SalonLoader from "@/components/Loading"
 
-// Product type definition
 interface Product {
     id: string
     name: string
@@ -47,7 +46,6 @@ export default function ProductsPage() {
         rating: ''
     }
 
-    // const [products, setProducts] = useState<Product[]>(demoProducts)
     const [newProduct, setNewProduct] = useState<Omit<Product, "id">>({
         name: "",
         description: "",
@@ -59,6 +57,8 @@ export default function ProductsPage() {
     const [isUploading, setIsUploading] = useState(false)
     const [isVerified, setIsVerified] = useState(false)
     const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const [uploaded, setIsUploaded] = useState<boolean>(false);
+
     // routes for getting and submitting product data
     const createProduct = api.products.createProduct.useMutation();
     const products = api.products.getProducts.useQuery();
@@ -110,6 +110,7 @@ export default function ProductsPage() {
                 image: data?.secureUrl
             })
             setIsVerified(true);
+            setIsUploaded(true);
 
         } catch (error) {
             toast.error(error as string)
@@ -262,7 +263,10 @@ export default function ProductsPage() {
                                 </div>
                             </div>
                             <DialogFooter>
-                                <Button type="submit" disabled={!isVerified && selectedFile === null}>
+                                <Button type="submit" disabled={!isVerified && !uploaded}
+                                    className="cursor-pointer"
+                                    variant={'default'}
+                                >
                                     {
                                         createProduct.isPending ?
                                             ('Creating...') :

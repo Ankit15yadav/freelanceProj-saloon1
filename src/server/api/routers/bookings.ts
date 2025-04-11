@@ -5,22 +5,22 @@ import { Input } from "@/components/ui/input";
 
 export const Bookings = createTRPCRouter({
     getBooking: publicProcedure.input(z.object({
-        userId: z.string()
+        userId: z.string().optional()
     })).query(async ({ ctx, input }) => {
 
         if (!ctx) {
             throw new Error("Not authorized");
         }
 
-        const user = await ctx.db.user.findUnique({
-            where: {
-                id: input.userId
-            },
-        })
+        // const user = await ctx.db.user.findUnique({
+        //     where: {
+        //         id: input.userId
+        //     },
+        // })
 
-        if (!user) {
-            throw new Error("Authorized");
-        }
+        // if (!user) {
+        //     throw new Error("Authorized");
+        // }
 
         const bookings = await db.booking.findMany({
             orderBy: {
@@ -32,15 +32,18 @@ export const Bookings = createTRPCRouter({
     }),
 
     updateBooking: publicProcedure.input(z.object({
-        groupdId: z.string()
+        groupdId: z.string(),
+        status: z.string()
     })).mutation(async ({ ctx, input }) => {
+
+
 
         await ctx.db.booking.update({
             where: {
                 id: input.groupdId
             },
             data: {
-                status: 'VIEWED'
+                status: input.status as 'VIEWED' | 'COMPLETED' | 'PENDING' | 'CANCELLED'
             }
         })
     }),

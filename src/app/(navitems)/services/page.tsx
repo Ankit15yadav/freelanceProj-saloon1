@@ -216,6 +216,7 @@ const Home: NextPage = () => {
                                         )}
 
                                         <BookingModal
+
                                             serviceName={service.name}
                                             price={service.price || "Price on consultation"}
                                             imageUrl={`/services/service-${(serviceIndex % 6) + 1}.svg`}

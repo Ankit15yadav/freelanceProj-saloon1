@@ -227,8 +227,14 @@ export function BookingModal({
                     </div>
 
                     <DialogFooter className="flex justify-end pt-2">
-                        <Button type="submit" className="w-full md:w-auto">
-                            Confirm Booking
+                        <Button type="submit" className="w-full md:w-auto"
+                            disabled={createBooking.isPending}
+                        >
+                            {
+                                createBooking.isPending ?
+                                    ("Booking..") :
+                                    ("Confirm Booking")
+                            }
                         </Button>
                     </DialogFooter>
                 </form>
