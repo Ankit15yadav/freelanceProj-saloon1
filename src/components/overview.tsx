@@ -20,7 +20,7 @@ export function Overview({ data }: OverviewProps) {
                     fontSize={12}
                     tickLine={false}
                     axisLine={false}
-                    tickFormatter={(value) => `$${value}`}
+                    tickFormatter={(value) => `₹ ${value}`}
                 />
                 <Tooltip
                     content={({ active, payload }) => {
@@ -29,7 +29,7 @@ export function Overview({ data }: OverviewProps) {
                                 <Card className="border shadow-sm">
                                     <CardContent className="p-2">
                                         <div className="text-sm font-bold">{payload[0]?.payload.name}</div>
-                                        <div className="text-sm font-semibold text-primary">${payload[0]?.value?.toString()}</div>
+                                        <div className="text-sm font-semibold text-primary">₹{payload[0]?.value?.toString()}</div>
                                     </CardContent>
                                 </Card>
                             )

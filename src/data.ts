@@ -101,20 +101,34 @@ export function calculateMonthlyRevenue(bookings: Bookings[]): { name: string; t
         Oct: 0,
         Nov: 0,
         Dec: 0,
-    }
+    };
 
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     bookings.forEach((booking) => {
-        if (booking.servicePrice && /^\d+$/.test(booking.servicePrice)) {
-            const bookingDate = new Date(booking.createdAt)
-            const monthName = monthNames[bookingDate.getMonth()]
-            monthlyRevenue[monthName!]! += Number.parseInt(booking.servicePrice)
-        }
-    })
+        // Only consider completed bookings
+        if (booking.status !== 'COMPLETED') return;
 
-    return Object.entries(monthlyRevenue).map(([name, total]) => ({ name, total }))
+        if (booking.servicePrice) {
+            const price = booking.servicePrice.trim();
+
+            // Ignore non-numeric labels, for example "Price on consultation"
+            if (price === "Price on consultation") return;
+
+            // Remove all non-digit characters (e.g., removes the rupee sign)
+            const numericPrice = price.replace(/[^\d]/g, '');
+            if (!numericPrice) return;
+
+            const parsedPrice = parseInt(numericPrice, 10);
+            const bookingDate = new Date(booking.createdAt);
+            const monthName = monthNames[bookingDate.getMonth()];
+            monthlyRevenue[monthName!]! += parsedPrice;
+        }
+    });
+
+    return Object.entries(monthlyRevenue).map(([name, total]) => ({ name, total }));
 }
+
 
 export function getBookingStatusCounts(bookings: Bookings[]): Record<string, number> {
     const statusCounts: Record<string, number> = {

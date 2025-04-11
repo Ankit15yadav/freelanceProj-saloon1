@@ -10,7 +10,19 @@ interface ReservationModeChartProps {
 const COLORS = ["#0088fe", "#00c49f", "#ff8042", "#8884d8"]
 
 export function ReservationModeChart({ data }: ReservationModeChartProps) {
-    const chartData = Object.entries(data).map(([name, value], index) => ({
+    // Normalize keys to lowercase and sum values for duplicates
+    const unifiedData: Record<string, number> = {}
+
+    Object.entries(data).forEach(([key, value]) => {
+        const lowerKey = key.toLowerCase()
+        if (unifiedData[lowerKey] === undefined) {
+            unifiedData[lowerKey] = value
+        } else {
+            unifiedData[lowerKey] += value
+        }
+    })
+
+    const chartData = Object.entries(unifiedData).map(([name, value], index) => ({
         name,
         value,
         color: COLORS[index % COLORS.length],

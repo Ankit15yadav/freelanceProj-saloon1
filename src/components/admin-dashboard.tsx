@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { ArrowDown, ArrowUp, Calendar, DollarSign, Filter, IndianRupee, Package, ShoppingCart } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Overview } from "@/components/overview"
 import { RecentBookings } from "@/components/recent-booking"
 import { BookingsByService } from "@/components/bookings-by-service"
-import { DatePickerWithRange } from "@/components/date-range-picker"
 import { UserActivityChart } from "@/components/user-activity-chart"
 import { PaymentChart } from "@/components/payment-chart"
 import { StatusDistribution } from "@/components/status-distribution"
@@ -21,6 +20,7 @@ import {
     getNewProducts,
     calculatePendingBookingChange,
     calculateMonthlyIncome,
+    type Bookings,
 } from "@/data"
 import { api } from "@/trpc/react"
 
@@ -39,11 +39,48 @@ export default function AdminDashboard() {
     const newProduct = getNewProducts(products?.data || [])
     const pendingBooking = calculatePendingBookingChange(bookings?.data || []);
 
+    const reportRef = useRef<HTMLDivElement>(null);
+
+
     // console.log(monthlyComparision);
+
+    const handleDownloadReport = async () => {
+
+
+        if (!reportRef.current) return;
+
+        const html2canvas = (await import("html2canvas")).default;
+        const { jsPDF } = await import("jspdf");
+
+        const canvas = await html2canvas(reportRef.current, {
+            scale: 2,
+        });
+        const imgData = canvas.toDataURL("image/png");
+
+        const pdf = new jsPDF({
+            orientation: "portrait",
+            unit: "pt",
+            format: "a4",
+        });
+
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = pdf.internal.pageSize.getHeight();
+
+        const canvasWidth = canvas.width;
+        const canvasHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / canvasWidth, pdfHeight / canvasHeight);
+        const imgWidth = canvasWidth * ratio;
+        const imgHeight = canvasHeight * ratio;
+
+        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+
+        pdf.save("dashboard-report.pdf");
+    };
+
 
     return (
         <div className="flex min-h-screen w-full flex-col">
-            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
+            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8" ref={reportRef}>
                 <div className="flex items-center">
                     <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
                     <div className="ml-auto flex items-center gap-2">
@@ -52,7 +89,9 @@ export default function AdminDashboard() {
                             <Filter className="h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Filter</span>
                         </Button> */}
-                        <Button size="sm" className="h-8">
+                        <Button size="sm" className="h-8"
+                            onClick={handleDownloadReport}
+                        >
                             Download Report
                         </Button>
                     </div>
@@ -252,7 +291,7 @@ export default function AdminDashboard() {
                     <TabsContent value="products" className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Products</CardTitle>
+                                <CardTitle>Products (1-20) </CardTitle>
                                 <CardDescription>Manage your products</CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -267,11 +306,11 @@ export default function AdminDashboard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {products?.data?.map((product) => (
+                                            {products?.data?.slice(0, 20)?.map((product) => (
                                                 <tr key={product.id} className="border-b">
                                                     <td className="p-2">{product.name}</td>
                                                     <td className="p-2 max-w-[200px] truncate">{product.description}</td>
-                                                    <td className="p-2">${product.price}</td>
+                                                    <td className="p-2">₹{product.price}</td>
                                                     <td className="p-2">{product.rating}/5</td>
                                                 </tr>
                                             ))}
@@ -285,7 +324,7 @@ export default function AdminDashboard() {
                     <TabsContent value="bookings" className="space-y-4">
                         <Card>
                             <CardHeader>
-                                <CardTitle>Bookings</CardTitle>
+                                <CardTitle>Bookings (1-50) </CardTitle>
                                 <CardDescription>Manage your bookings</CardDescription>
                             </CardHeader>
                             <CardContent>
@@ -302,7 +341,7 @@ export default function AdminDashboard() {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {bookings?.data?.map((booking) => (
+                                            {bookings?.data?.slice(0, 50)?.map((booking: Bookings) => (
                                                 <tr key={booking.id} className="border-b">
                                                     <td className="p-2">{booking.serviceName || "N/A"}</td>
                                                     <td className="p-2">{booking.name}</td>

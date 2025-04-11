@@ -24,6 +24,12 @@ import { toast } from "sonner"
 const data = {
     Tabs: [
         {
+            title: 'Analytics',
+            url: '/admin/dashboard',
+            id: 5
+
+        },
+        {
             title: "Bookings",
             url: "/admin/bookings",
             id: 1
@@ -109,7 +115,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 </SidebarGroup>
             </SidebarContent>
             <SidebarFooter className='bg-inherit'>
-                <Button className="bg-red-500/60 text-black text-sm font-medium hover:bg-red-400"
+                <Button className="bg-red-400 text-white text-sm font-medium hover:bg-red-300
+                cursor-pointer
+                "
                     onClick={handleLogout}
                 >
                     Logout
