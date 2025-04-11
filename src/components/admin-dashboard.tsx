@@ -1,7 +1,7 @@
 "use client"
 
-import { useRef, useState } from "react"
-import { ArrowDown, ArrowUp, Calendar, DollarSign, Filter, IndianRupee, Package, ShoppingCart } from "lucide-react"
+import { useState } from "react"
+import { ArrowDown, ArrowUp, Calendar, IndianRupee, Package, ShoppingCart } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
@@ -39,48 +39,11 @@ export default function AdminDashboard() {
     const newProduct = getNewProducts(products?.data || [])
     const pendingBooking = calculatePendingBookingChange(bookings?.data || []);
 
-    const reportRef = useRef<HTMLDivElement>(null);
-
-
-    // console.log(monthlyComparision);
-
-    const handleDownloadReport = async () => {
-
-
-        if (!reportRef.current) return;
-
-        const html2canvas = (await import("html2canvas")).default;
-        const { jsPDF } = await import("jspdf");
-
-        const canvas = await html2canvas(reportRef.current, {
-            scale: 2,
-        });
-        const imgData = canvas.toDataURL("image/png");
-
-        const pdf = new jsPDF({
-            orientation: "portrait",
-            unit: "pt",
-            format: "a4",
-        });
-
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = pdf.internal.pageSize.getHeight();
-
-        const canvasWidth = canvas.width;
-        const canvasHeight = canvas.height;
-        const ratio = Math.min(pdfWidth / canvasWidth, pdfHeight / canvasHeight);
-        const imgWidth = canvasWidth * ratio;
-        const imgHeight = canvasHeight * ratio;
-
-        pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
-
-        pdf.save("dashboard-report.pdf");
-    };
 
 
     return (
         <div className="flex min-h-screen w-full flex-col">
-            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8" ref={reportRef}>
+            <main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8" >
                 <div className="flex items-center">
                     <h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
                     <div className="ml-auto flex items-center gap-2">
@@ -90,7 +53,7 @@ export default function AdminDashboard() {
                             <span className="hidden sm:inline">Filter</span>
                         </Button> */}
                         <Button size="sm" className="h-8"
-                            onClick={handleDownloadReport}
+                        // onClick={handleDownloadReport}
                         >
                             Download Report
                         </Button>
