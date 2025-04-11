@@ -52,11 +52,11 @@ export default function AdminDashboard() {
                             <Filter className="h-3.5 w-3.5" />
                             <span className="hidden sm:inline">Filter</span>
                         </Button> */}
-                        <Button size="sm" className="h-8"
+                        {/* <Button size="sm" className="h-8"
                         // onClick={handleDownloadReport}
                         >
                             Download Report
-                        </Button>
+                        </Button> */}
                     </div>
                 </div>
 
