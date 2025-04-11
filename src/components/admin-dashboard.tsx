@@ -150,7 +150,7 @@ export default function AdminDashboard() {
                                     <div className="text-2xl font-bold">{statusCounts.PENDING || 0}</div>
                                     <div className="flex items-center text-xs text-muted-foreground">
                                         <ArrowUp className="mr-1 h-3 w-3 text-green-500" />
-                                        {pendingBooking} from yesterday
+                                        {pendingBooking}% from yesterday
                                     </div>
                                 </CardContent>
                             </Card>

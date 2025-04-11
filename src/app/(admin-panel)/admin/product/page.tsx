@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import Image from "next/image"
-import { Check, Plus, Star, Trash2 } from "lucide-react"
+import { Check, Pencil, Plus, Star, Trash2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -290,8 +290,20 @@ export default function ProductsPage() {
 
 function ProductCard({ product }: { product: Product }) {
 
+    const [open, setOpen] = useState<boolean>(false);
+    const [open2, setOpen2] = useState<boolean>(false);
+    const [editedProduct, setEditedProduct] = useState<Product>({
+        description: product.description,
+        id: product.id,
+        name: product.name,
+        image: product.image,
+        price: product.price,
+        rating: product.rating
+    })
+
     const deleteProducts = api.products.deleteProduct.useMutation();
     const refetch = useRefetch();
+
 
     const handelDelete = async (ProductId: string) => {
 
@@ -310,6 +322,10 @@ function ProductCard({ product }: { product: Product }) {
             toast.error("Error while deleting product");
             console.log(error);
         }
+    }
+
+    const handleChange = () => {
+
     }
 
     return (
@@ -340,11 +356,130 @@ function ProductCard({ product }: { product: Product }) {
                     <Star className="h-3 w-3 fill-primary text-primary mr-1" />
                     <span>{product.rating}</span>
                 </div>
-                <div className="">
-                    <Trash2
-                        size={15} className="text-red-500 hover:text-orange-300 hover:cursor-pointer"
-                        onClick={() => handelDelete(product?.id)}
-                    />
+                <div className="flex gap-x-2">
+                    <Dialog open={open} onOpenChange={setOpen} >
+                        <DialogTrigger asChild>
+                            <Trash2
+                                size={15} className="text-red-500 hover:text-orange-300 hover:cursor-pointer"
+                            // onClick={() => handelDelete(product?.id)}
+                            />
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>
+                                    {product.name}
+                                </DialogTitle>
+                                <DialogDescription>
+                                    This will permanently delete the item. You can't undo this
+                                </DialogDescription>
+
+                                <div className="flex gap-x-3 mt-3">
+                                    <Button
+                                        onClick={() => setOpen(false)}
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button variant={'destructive'}
+                                        className="hover:cursor-pointer hover:bg-red-400"
+                                        onClick={() => {
+                                            handelDelete(product?.id);
+                                            setOpen(false);
+                                        }}
+                                    >
+                                        Delete
+                                    </Button>
+                                </div>
+                            </DialogHeader>
+                        </DialogContent>
+                    </Dialog>
+
+                    <Dialog open={open2} onOpenChange={setOpen2} >
+                        <DialogTrigger asChild>
+                            <Pencil size={15} className="text-gray-600 hover:text-gray-800 cursor-pointer" />
+                        </DialogTrigger>
+                        <DialogContent className="">
+                            <form>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {product.name}
+                                    </DialogTitle>
+                                    <DialogDescription>
+                                        Edit product
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="flex flex-col mt-4 space-y-4">
+                                    <div className=" flex flex-col gap-y-2">
+                                        <Label htmlFor="name">
+                                            Name
+                                        </Label>
+                                        <Input
+                                            id="name"
+                                            name="name"
+                                            value={editedProduct.name}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className=" flex flex-col gap-y-2">
+                                        <Label htmlFor="description">
+                                            Description
+                                        </Label>
+                                        <Textarea
+                                            id="description"
+                                            name="description"
+                                            value={editedProduct.description}
+                                            onChange={handleChange}
+                                        />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="price">Price (₹)</Label>
+                                            <Input
+                                                id="price"
+                                                name="price"
+                                                type="text"
+                                                min="0"
+                                                step="1"
+                                                value={editedProduct.price}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                        <div className="grid gap-2">
+                                            <Label htmlFor="rating">Rating (4-5)</Label>
+                                            <Input
+                                                id="rating"
+                                                name="rating"
+                                                type="number"
+                                                min="4.0"
+                                                max="5.0"
+                                                step="0.1"
+                                                value={editedProduct.rating}
+                                                onChange={handleChange}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-col gap-y-2 ">
+                                        <Label htmlFor="file">Upload Image</Label>
+
+                                        <div className="flex  gap-x-2">
+                                            <Input
+                                                type="file"
+                                                name="file"
+                                                id="file"
+                                            />
+                                            <Button className="w-fit">
+                                                Upload
+                                            </Button>
+                                        </div>
+
+                                    </div>
+                                    <div>
+
+                                    </div>
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+
                 </div>
             </div>
         </Card>
